@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 
 import { getCodeDescription } from '@/common/enums';
-import { ServiceResponseSchema } from '@/common/models/serviceResponse';
+import { ServiceResponseSchema } from '@/common/models';
 
 export function createApiResponse(schema: z.ZodTypeAny, statusCode = StatusCodes.OK) {
   return {
