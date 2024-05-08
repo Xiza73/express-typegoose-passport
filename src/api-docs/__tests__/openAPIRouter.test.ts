@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import request from 'supertest';
 
-import { app } from '@/server';
+import { app } from '@/config/server.config';
 
 import { generateOpenAPIDocument } from '../openAPIDocumentGenerator';
 

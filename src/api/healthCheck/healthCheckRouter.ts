@@ -4,8 +4,9 @@ import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 
 import { createApiResponses } from '@/api-docs/openAPIResponseBuilders';
-import { ResponseStatus, ServiceResponse } from '@/common/models/serviceResponse';
-import { handleServiceResponse } from '@/common/utils/httpHandlers';
+import { ModulePath } from '@/common/models';
+import { ResponseStatus, ServiceResponse } from '@/common/models/service-response.model';
+import { handleServiceResponse } from '@/common/utils/http-handlers.util';
 
 export const healthCheckRegistry = new OpenAPIRegistry();
 
@@ -14,7 +15,7 @@ export const healthCheckRouter: Router = (() => {
 
   healthCheckRegistry.registerPath({
     method: 'get',
-    path: '/health-check',
+    path: ModulePath.HEALTH_CHECK,
     tags: ['Health Check'],
     responses: createApiResponses([
       {
