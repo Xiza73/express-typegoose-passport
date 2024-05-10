@@ -1,3 +1,4 @@
+import * as bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import helmet from 'helmet';
@@ -17,6 +18,8 @@ _app.set('trust proxy', true);
 
 // Middlewares
 _app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+_app.use(bodyParser.urlencoded({ extended: true }));
+_app.use(bodyParser.json());
 _app.use(helmet());
 _app.use(rateLimiter);
 

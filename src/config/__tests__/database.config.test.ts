@@ -1,13 +1,12 @@
 import mongoose from 'mongoose';
 
-import { env } from '@/common/utils';
+import { env } from '@/common/utils/env-config.util';
 
 vi.mock('mongoose');
 
 describe('database.config', () => {
   it('should connect to the database', async () => {
     const connectSpy = vi.spyOn(mongoose, 'connect').mockResolvedValueOnce(mongoose);
-    console.log('connectSpy', connectSpy);
 
     await import('../database.config');
 

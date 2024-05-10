@@ -19,6 +19,13 @@ export class ServiceResponse<T = null> {
   }
 }
 
+export const ErrorResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  responseObject: z.null(),
+  statusCode: z.number(),
+});
+
 export const ServiceResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     success: z.boolean(),

@@ -6,6 +6,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
+    "lib": ["es6"],
     "moduleResolution": "Node",
     "outDir": "dist",
     "importsNotUsedAsValues": "remove",
@@ -13,11 +14,20 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noPropertyAccessFromIndexSignature": false,
-    "skipLibCheck": true,
+    "strictPropertyInitialization": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "allowJs": false,
+    "importHelpers": true,
+    "inlineSourceMap": true,
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
     "ignoreDeprecations": "5.0",
     "types": ["vitest/globals"]
   },
   "extends": [],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "dist"],
   "include": ["src/**/*.ts"]
 }

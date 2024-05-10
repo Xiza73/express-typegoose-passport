@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { MemoryStore, rateLimit } from 'express-rate-limit';
 
-import { env } from '@/common/utils';
+import { env } from '@/common/utils/env-config.util';
 
 const rateLimiter = rateLimit({
   legacyHeaders: true,

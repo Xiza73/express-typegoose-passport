@@ -5,7 +5,7 @@ import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { LevelWithSilent } from 'pino';
 import { CustomAttributeKeys, Options, pinoHttp } from 'pino-http';
 
-import { env } from '@/common/utils';
+import { env } from '@/common/utils/env-config.util';
 
 enum LogLevel {
   Fatal = 'fatal',

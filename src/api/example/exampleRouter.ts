@@ -3,7 +3,7 @@ import express, { Request, Response, Router } from 'express';
 import { z } from 'zod';
 
 import { createApiResponse } from '@/api-docs/openAPIResponseBuilders';
-import { ModulePath } from '@/common/models';
+import { ModulePath } from '@/common/models/route.model';
 import { handleServiceResponse, validateRequest } from '@/common/utils/http-handlers.util';
 
 import { ExampleSchema, GetExampleSchema } from './exampleModel';

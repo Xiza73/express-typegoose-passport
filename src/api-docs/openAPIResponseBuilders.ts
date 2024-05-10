@@ -2,7 +2,8 @@ import { ResponseConfig } from '@asteasolutions/zod-to-openapi';
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 
-import { getCodeDescription, ServiceResponseSchema } from '@/common/models';
+import { getCodeDescription } from '@/common/models/code-description.model';
+import { ServiceResponseSchema } from '@/common/models/service-response.model';
 
 export function createApiResponse(schema: z.ZodTypeAny, statusCode = StatusCodes.OK) {
   return {

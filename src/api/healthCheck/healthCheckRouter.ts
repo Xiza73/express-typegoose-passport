@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
 
 import { createApiResponses } from '@/api-docs/openAPIResponseBuilders';
-import { ModulePath } from '@/common/models';
+import { ModulePath } from '@/common/models/route.model';
 import { ResponseStatus, ServiceResponse } from '@/common/models/service-response.model';
 import { handleServiceResponse } from '@/common/utils/http-handlers.util';
 

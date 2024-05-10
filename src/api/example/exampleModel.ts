@@ -7,9 +7,9 @@ extendZodWithOpenApi(z);
 
 export type Example = z.infer<typeof ExampleSchema>;
 export const ExampleSchema = z.object({
-  id: z.number(),
+  id: commonValidations._id,
   name: z.string(),
-  email: z.string().email(),
+  email: commonValidations.email,
   age: z.number(),
   createdAt: z.date(),
   updatedAt: z.date(),
