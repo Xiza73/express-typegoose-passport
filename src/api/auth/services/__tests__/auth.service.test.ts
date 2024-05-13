@@ -1,4 +1,6 @@
-import { userRepository } from '@/api/user/repositories';
+import { StatusCodes } from 'http-status-codes';
+
+import { userRepository } from '@/api/user/repositories/user.repository';
 import { clearDatabase, closeDatabase, connect } from '@/config/test-database.config';
 
 import { authService } from '../auth.service';
@@ -43,7 +45,7 @@ describe('AuthService', () => {
       // Assert
       expect(response.success).toBeFalsy();
       expect(response.message).toContain('Passwords do not match');
-      expect(response.statusCode).toEqual(400);
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });
 
     it('should return a conflict for existing email', async () => {
@@ -62,7 +64,7 @@ describe('AuthService', () => {
       // Assert
       expect(response.success).toBeFalsy();
       expect(response.message).toContain('Email is already in use');
-      expect(response.statusCode).toEqual(409);
+      expect(response.statusCode).toEqual(StatusCodes.CONFLICT);
     });
 
     it('should return an internal server error for unexpected error', async () => {
@@ -80,7 +82,71 @@ describe('AuthService', () => {
       // Assert
       expect(response.success).toBeFalsy();
       expect(response.message).toContain('Error creating user');
-      expect(response.statusCode).toEqual(500);
+      expect(response.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
+    });
+  });
+
+  describe('sign in', () => {
+    const validInput = {
+      email: 'jrobin@example.com',
+      password: 'pass123@',
+    };
+
+    it('should return a success response for valid input', async () => {
+      // Arrange
+      await authService.signUp(validInput.email, validInput.password, validInput.password);
+
+      // Act
+      const response = await authService.signIn(validInput.email, validInput.password);
+
+      // Assert
+      expect(response.success).toBeTruthy();
+      expect(response.message).toContain('User signed in');
+      expect(response.responseObject).toHaveProperty('_id');
+      expect(response.responseObject?.local.email).toEqual(validInput.email);
+      expect(response.responseObject?.token).toBeDefined();
+    });
+
+    it('should return a not found for non-existing user', async () => {
+      // Arrange
+      const nonExistingEmail = 'jrobin2@example.com';
+      await authService.signUp(validInput.email, validInput.password, validInput.password);
+
+      // Act
+      const response = await authService.signIn(nonExistingEmail, validInput.password);
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('User not found');
+      expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+    });
+
+    it('should return an unauthorized for invalid password', async () => {
+      // Arrange
+      const invalidPassword = 'pass1234@';
+      await authService.signUp(validInput.email, validInput.password, validInput.password);
+
+      // Act
+      const response = await authService.signIn(validInput.email, invalidPassword);
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('Invalid password');
+      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+    });
+
+    it('should return an internal server error for unexpected error', async () => {
+      // Arrange
+      await authService.signUp(validInput.email, validInput.password, validInput.password);
+      vi.spyOn(userRepository, 'findByEmail').mockRejectedValue('Mocked error');
+
+      // Act
+      const response = await authService.signIn(validInput.email, validInput.password);
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('Error signing in');
+      expect(response.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { getModelForClass, modelOptions, prop, Severity } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 
@@ -11,6 +11,7 @@ const Mixed = mongoose.Schema.Types.Mixed;
     versionKey: false,
     strict: false,
   },
+  options: { allowMixed: Severity.ALLOW },
 })
 export class User {
   @prop({ type: Mixed })

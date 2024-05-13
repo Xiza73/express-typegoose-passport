@@ -6,6 +6,11 @@ import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 
 export function generateOpenAPIDocument() {
   const registry = new OpenAPIRegistry([healthCheckRegistry, exampleRegistry, authRegistry]);
+  registry.registerComponent('securitySchemes', 'bearerAuth', {
+    type: 'http',
+    scheme: 'bearer',
+    bearerFormat: 'JWT',
+  });
   const generator = new OpenApiGeneratorV3(registry.definitions);
 
   return generator.generateDocument({
@@ -18,5 +23,11 @@ export function generateOpenAPIDocument() {
       description: 'View the raw OpenAPI Specification in JSON format',
       url: '/swagger.json',
     },
+    security: [
+      {
+        bearerAuth: [],
+        apiKeyAuth: [],
+      },
+    ],
   });
 }

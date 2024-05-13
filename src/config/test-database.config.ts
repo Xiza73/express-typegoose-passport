@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import { logger } from './logger.config';
 
 setGlobalOptions({ options: { allowMixed: Severity.ALLOW } });
+
 const mongod = MongoMemoryServer.create();
 
 export const connect = async () => {

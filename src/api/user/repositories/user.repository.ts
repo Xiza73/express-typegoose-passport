@@ -5,15 +5,15 @@ export const userRepository = {
   //   return UserModel.findOne(params).exec();
   // },
 
-  findByEmail: async (email: string): Promise<User | null> => {
+  findByEmail: async (email: string) => {
     return UserModel.findOne({
       'local.email': email,
     }).exec();
   },
 
-  // findById: async (id: string): Promise<User | null> => {
-  //   return UserModel.findById(id).exec();
-  // },
+  findById: async (id: string): Promise<User | null> => {
+    return UserModel.findById(id).exec();
+  },
 
   create: async (email: string, password: string): Promise<User> => {
     const newUser = new UserModel({

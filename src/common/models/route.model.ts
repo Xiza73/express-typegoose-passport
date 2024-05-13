@@ -11,3 +11,10 @@ export interface Route {
   path: ModulePath;
   router: Router;
 }
+
+export enum Method {
+  GET = 'get',
+  POST = 'post',
+  PUT = 'put',
+  DELETE = 'delete',
+}

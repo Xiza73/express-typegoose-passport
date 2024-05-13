@@ -12,4 +12,5 @@ export const env = cleanEnv(process.env, {
   COMMON_RATE_LIMIT_WINDOW_MS: num({ devDefault: testOnly(1000) }),
   DB_URI: str({ devDefault: testOnly('mongodb://localhost:27017/test') }),
   ACCESS_TOKEN: str(),
+  JWT_SECRET: str(),
 });

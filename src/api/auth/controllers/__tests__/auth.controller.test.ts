@@ -17,12 +17,25 @@ vi.mock('../../services/auth.service', () => ({
       },
       statusCode: StatusCodes.CREATED,
     })),
+
+    signIn: vi.fn(() => ({
+      success: true,
+      message: 'User created',
+      responseObject: {
+        id: '1234567890',
+        local: {
+          email: 'jrobin@example.com',
+        },
+      },
+      statusCode: StatusCodes.CREATED,
+    })),
   },
 }));
 
 const res = {
   status: vi.fn(() => res),
   send: vi.fn(),
+  json: vi.fn(),
 } as unknown as Response;
 
 beforeEach(() => {
@@ -57,6 +70,49 @@ describe('AuthController', () => {
         },
         statusCode: StatusCodes.CREATED,
       });
+    });
+  });
+
+  describe('sign in', () => {
+    it('should send a success response for valid input', async () => {
+      // Arrange
+      const req = {
+        body: {
+          email: 'jrobin@example.com',
+          password: 'pass123@',
+        },
+      } as unknown as Request;
+
+      // Act
+      await authController.signIn(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.CREATED);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: 'User created',
+        responseObject: {
+          id: expect.any(String),
+          local: {
+            email: 'jrobin@example.com',
+          },
+        },
+        statusCode: StatusCodes.CREATED,
+      });
+    });
+  });
+
+  describe('check session', () => {
+    it('should send a success response', async () => {
+      // Arrange
+      const req = {} as unknown as Request;
+
+      // Act
+      await authController.checkSession(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.OK);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Session is active' });
     });
   });
 });

@@ -15,7 +15,6 @@
     "strict": true,
     "noPropertyAccessFromIndexSignature": false,
     "strictPropertyInitialization": false,
-    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "removeComments": false,
     "allowJs": false,

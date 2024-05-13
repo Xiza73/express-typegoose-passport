@@ -12,4 +12,16 @@ export const authController = {
 
     handleServiceResponse(serviceResponse, res);
   },
+
+  signIn: async (req: Request, res: Response): Promise<void> => {
+    const { email, password } = req.body;
+
+    const serviceResponse = await authService.signIn(email, password);
+
+    handleServiceResponse(serviceResponse, res);
+  },
+
+  checkSession: async (_req: Request, res: Response): Promise<void> => {
+    res.status(200).json({ message: 'Session is active' });
+  },
 };
