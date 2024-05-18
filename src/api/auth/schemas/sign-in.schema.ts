@@ -24,3 +24,17 @@ export const UserSignedInSchema = z.object({
   updatedAt: z.date(),
   token: z.string(),
 });
+
+export const LoginSuccessSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  responseObject: UserSignedInSchema,
+  statusCode: z.number(),
+});
+
+export const LogoutSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  responseObject: z.null(),
+  statusCode: z.number(),
+});

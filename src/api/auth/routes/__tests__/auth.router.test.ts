@@ -26,9 +26,9 @@ describe('AuthRouter', () => {
       // Arrange
       const req = {
         body: {
-          email: 'jrobin@example.com',
-          password: 'passW123@',
-          repeatPassword: 'passW123@',
+          email: env.TEST_EMAIL,
+          password: env.TEST_PASSWORD,
+          repeatPassword: env.TEST_PASSWORD,
         },
       } as unknown as Request;
 
@@ -44,7 +44,7 @@ describe('AuthRouter', () => {
       expect(response.statusCode).toEqual(StatusCodes.CREATED);
       expect(responseBody.success).toBeTruthy();
       expect(responseBody.message).toContain('User created');
-      expect(responseBody.responseObject.local.email).toEqual('jrobin@example.com');
+      expect(responseBody.responseObject.local.email).toEqual(env.TEST_EMAIL);
     });
   });
 
@@ -53,17 +53,17 @@ describe('AuthRouter', () => {
       // Arrange
       const req = {
         body: {
-          email: 'jrobin@example.com',
-          password: 'passW123@',
+          email: env.TEST_EMAIL,
+          password: env.TEST_PASSWORD,
         },
       } as unknown as Request;
 
       await request(app)
         .post('/api/auth/signup')
         .send({
-          email: 'jrobin@example.com',
-          password: 'passW123@',
-          repeatPassword: 'passW123@',
+          email: env.TEST_EMAIL,
+          password: env.TEST_PASSWORD,
+          repeatPassword: env.TEST_PASSWORD,
         })
         .set('accesstoken', env.ACCESS_TOKEN);
 
@@ -77,7 +77,7 @@ describe('AuthRouter', () => {
       expect(response.statusCode).toEqual(StatusCodes.OK);
       expect(responseBody.success).toBeTruthy();
       expect(responseBody.message).toContain('User signed in');
-      expect(responseBody.responseObject.local.email).toEqual('jrobin@example.com');
+      expect(responseBody.responseObject.local.email).toEqual(env.TEST_EMAIL);
     });
   });
 
@@ -130,14 +130,34 @@ describe('AuthRouter', () => {
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
     });
   });
+
+  describe('GET /api/auth/login/failed', () => {
+    it('should return a redirect response', async () => {
+      // Act
+      const response = await request(app).get('/api/auth/login/failed');
+
+      // Assert
+      expect(response.header.location).toEqual(`${env.FRONTEND_URL}/auth/failed`);
+    });
+  });
+
+  describe('GET /api/auth/google', () => {
+    it('should return a redirect response', async () => {
+      // Act
+      const response = await request(app).get('/api/auth/google');
+
+      // Assert
+      expect(response.header.location).toContain('accounts.google.com');
+    });
+  });
 });
 
 const getToken = async () => {
   const reqCreate = {
     body: {
-      email: 'jrobin@example.com',
-      password: 'passW123@',
-      repeatPassword: 'passW123@',
+      email: env.TEST_EMAIL,
+      password: env.TEST_PASSWORD,
+      repeatPassword: env.TEST_PASSWORD,
     },
   } as unknown as Request;
 
@@ -148,8 +168,8 @@ const getToken = async () => {
 
   const reqSignIn = {
     body: {
-      email: 'jrobin@example.com',
-      password: 'passW123@',
+      email: env.TEST_EMAIL,
+      password: env.TEST_PASSWORD,
     },
   } as unknown as Request;
 

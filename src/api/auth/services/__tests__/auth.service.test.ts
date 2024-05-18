@@ -1,8 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { userRepository } from '@/api/user/repositories/user.repository';
+import { env } from '@/common/utils/env-config.util';
 import { clearDatabase, closeDatabase, connect } from '@/config/test-database.config';
 
+import { inviteRepository } from '../../repositories/invite.repository';
 import { authService } from '../auth.service';
 
 beforeAll(async () => await connect());
@@ -16,9 +18,9 @@ describe('AuthService', () => {
     it('should return a success response for valid input', async () => {
       // Arrange
       const validInput = {
-        email: 'jrobin@example.com',
-        password: 'pass123@',
-        repeatPassword: 'pass123@',
+        email: env.TEST_EMAIL,
+        password: env.TEST_PASSWORD,
+        repeatPassword: env.TEST_PASSWORD,
       };
 
       // Act
@@ -34,8 +36,8 @@ describe('AuthService', () => {
     it('should return a bad request for password mismatch', async () => {
       // Arrange
       const invalidInput = {
-        email: 'jrobin@example.com',
-        password: 'pass123@',
+        email: env.TEST_EMAIL,
+        password: env.TEST_PASSWORD,
         repeatPassword: 'pass123',
       };
 
@@ -50,11 +52,11 @@ describe('AuthService', () => {
 
     it('should return a conflict for existing email', async () => {
       // Arrange
-      const existingEmail = 'jrobin@example.com';
+      const existingEmail = env.TEST_EMAIL;
       const validInput = {
         email: existingEmail,
-        password: 'pass123@',
-        repeatPassword: 'pass123@',
+        password: env.TEST_PASSWORD,
+        repeatPassword: env.TEST_PASSWORD,
       };
 
       // Act
@@ -70,9 +72,9 @@ describe('AuthService', () => {
     it('should return an internal server error for unexpected error', async () => {
       // Arrange
       const validInput = {
-        email: 'jrobin@example.com',
-        password: 'pass123@',
-        repeatPassword: 'pass123@',
+        email: env.TEST_EMAIL,
+        password: env.TEST_PASSWORD,
+        repeatPassword: env.TEST_PASSWORD,
       };
       vi.spyOn(userRepository, 'create').mockRejectedValue('Mocked error');
 
@@ -88,8 +90,8 @@ describe('AuthService', () => {
 
   describe('sign in', () => {
     const validInput = {
-      email: 'jrobin@example.com',
-      password: 'pass123@',
+      email: env.TEST_EMAIL,
+      password: env.TEST_PASSWORD,
     };
 
     it('should return a success response for valid input', async () => {
@@ -109,7 +111,7 @@ describe('AuthService', () => {
 
     it('should return a not found for non-existing user', async () => {
       // Arrange
-      const nonExistingEmail = 'jrobin2@example.com';
+      const nonExistingEmail = env.TEST_ALT_EMAIL;
       await authService.signUp(validInput.email, validInput.password, validInput.password);
 
       // Act
@@ -146,6 +148,82 @@ describe('AuthService', () => {
       // Assert
       expect(response.success).toBeFalsy();
       expect(response.message).toContain('Error signing in');
+      expect(response.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
+    });
+  });
+
+  describe('login success', () => {
+    it('should return a success response for valid user', async () => {
+      // Arrange
+      const user = {
+        _id: '123',
+        local: {
+          email: env.TEST_EMAIL,
+        },
+      };
+
+      // Act
+      const response = await authService.loginSuccess(user as any);
+
+      // Assert
+      expect(response.success).toBeTruthy();
+      expect(response.message).toContain('User signed in');
+      expect(response.responseObject).toHaveProperty('_id');
+      expect(response.responseObject?.local.email).toEqual(env.TEST_EMAIL);
+    });
+
+    it('should return an unauthorized for missing user', async () => {
+      // Arrange
+
+      // Act
+      const response = await authService.loginSuccess();
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('Unauthorized');
+      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+    });
+  });
+
+  describe('add invite', () => {
+    it('should return a success response for valid input', async () => {
+      // Arrange
+      const validInput = env.TEST_EMAIL;
+
+      // Act
+      const response = await authService.addInvite(validInput);
+
+      // Assert
+      expect(response.success).toBeTruthy();
+      expect(response.message).toContain('Invite created');
+      expect(response.responseObject).toBeDefined();
+    });
+
+    it('should return a conflict for existing invite', async () => {
+      // Arrange
+      const existingEmail = env.TEST_EMAIL;
+      await authService.addInvite(existingEmail);
+
+      // Act
+      const response = await authService.addInvite(existingEmail);
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('Invite already exists');
+      expect(response.statusCode).toEqual(StatusCodes.CONFLICT);
+    });
+
+    it('should return an internal server error for unexpected error', async () => {
+      // Arrange
+      const validInput = env.TEST_EMAIL;
+      vi.spyOn(inviteRepository, 'find').mockRejectedValue('Mocked error');
+
+      // Act
+      const response = await authService.addInvite(validInput);
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('Error creating invite');
       expect(response.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
     });
   });
