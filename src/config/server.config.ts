@@ -1,10 +1,9 @@
-import '@/config/jwt-strategy.config';
+import '@/config/passport.config';
 
 import * as bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
-import { NextFunction, Request, Response } from 'express';
 import session from 'express-session';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -28,15 +27,6 @@ _app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 _app.use(morgan('dev'));
 _app.use(bodyParser.urlencoded({ extended: true }));
 _app.use(bodyParser.json());
-_app.use((error: Error, _req: Request, res: Response, next: NextFunction) => {
-  if (error instanceof SyntaxError) {
-    res.status(400).json({
-      error: 'Invalid JSON payload passed.',
-    });
-  } else {
-    next();
-  }
-});
 _app.use(cookieParser());
 _app.use(
   session({

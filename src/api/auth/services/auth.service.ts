@@ -8,6 +8,8 @@ import { ResponseStatus, ServiceResponse } from '@/common/models/service-respons
 import { env } from '@/common/utils/env-config.util';
 import { logger } from '@/config/logger.config';
 
+import { inviteRepository } from '../repositories/invite.repository';
+
 export const authService = {
   signUp: async (email: string, password: string, repeatPassword: string): Promise<ServiceResponse<User | null>> => {
     try {
@@ -47,6 +49,33 @@ export const authService = {
       );
     } catch (ex) {
       const errorMessage = `Error signing in: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  },
+
+  loginSuccess: async (user?: User): Promise<ServiceResponse<User | null>> => {
+    if (!user) return new ServiceResponse(ResponseStatus.Failed, 'Unauthorized', null, StatusCodes.UNAUTHORIZED);
+
+    return new ServiceResponse<User>(ResponseStatus.Success, 'User signed in', user, StatusCodes.OK);
+  },
+
+  addInvite: async (email: string): Promise<ServiceResponse<string | null>> => {
+    try {
+      const existInvite = await inviteRepository.find(email);
+      if (existInvite)
+        return new ServiceResponse(ResponseStatus.Failed, 'Invite already exists', null, StatusCodes.CONFLICT);
+
+      const savedInvite = await inviteRepository.create(email);
+
+      return new ServiceResponse<string>(
+        ResponseStatus.Success,
+        'Invite created',
+        savedInvite._id.toString(),
+        StatusCodes.CREATED
+      );
+    } catch (ex) {
+      const errorMessage = `Error creating invite: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
     }

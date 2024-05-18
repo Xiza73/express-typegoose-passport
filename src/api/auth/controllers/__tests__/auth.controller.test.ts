@@ -2,6 +2,8 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
+import { env } from '@/common/utils/env-config.util';
+
 import { authController } from '../auth.controller';
 
 vi.mock('../../services/auth.service', () => ({
@@ -12,7 +14,7 @@ vi.mock('../../services/auth.service', () => ({
       responseObject: {
         id: '1234567890',
         local: {
-          email: 'jrobin@example.com',
+          email: env.TEST_EMAIL,
         },
       },
       statusCode: StatusCodes.CREATED,
@@ -24,10 +26,31 @@ vi.mock('../../services/auth.service', () => ({
       responseObject: {
         id: '1234567890',
         local: {
-          email: 'jrobin@example.com',
+          email: env.TEST_EMAIL,
         },
       },
       statusCode: StatusCodes.CREATED,
+    })),
+
+    loginSuccess: vi.fn((user) => ({
+      success: true,
+      message: 'User signed in',
+      responseObject: user,
+      statusCode: StatusCodes.OK,
+    })),
+
+    addInvite: vi.fn(() => ({
+      success: true,
+      message: 'Invite created',
+      responseObject: {},
+      statusCode: StatusCodes.CREATED,
+    })),
+
+    checkSession: vi.fn(() => ({
+      success: true,
+      message: 'Session is active',
+      responseObject: {},
+      statusCode: StatusCodes.OK,
     })),
   },
 }));
@@ -48,9 +71,9 @@ describe('AuthController', () => {
       // Arrange
       const req = {
         body: {
-          email: 'jrobin@example.com',
-          password: 'pass123@',
-          repeatPassword: 'pass123@',
+          email: env.TEST_EMAIL,
+          password: env.TEST_PASSWORD,
+          repeatPassword: env.TEST_PASSWORD,
         },
       } as unknown as Request;
 
@@ -65,7 +88,7 @@ describe('AuthController', () => {
         responseObject: {
           id: expect.any(String),
           local: {
-            email: 'jrobin@example.com',
+            email: env.TEST_EMAIL,
           },
         },
         statusCode: StatusCodes.CREATED,
@@ -78,8 +101,8 @@ describe('AuthController', () => {
       // Arrange
       const req = {
         body: {
-          email: 'jrobin@example.com',
-          password: 'pass123@',
+          email: env.TEST_EMAIL,
+          password: env.TEST_PASSWORD,
         },
       } as unknown as Request;
 
@@ -94,7 +117,7 @@ describe('AuthController', () => {
         responseObject: {
           id: expect.any(String),
           local: {
-            email: 'jrobin@example.com',
+            email: env.TEST_EMAIL,
           },
         },
         statusCode: StatusCodes.CREATED,
@@ -113,6 +136,104 @@ describe('AuthController', () => {
       // Assert
       expect(res.status).toHaveBeenCalledWith(StatusCodes.OK);
       expect(res.json).toHaveBeenCalledWith({ message: 'Session is active' });
+    });
+  });
+
+  describe('logout', () => {
+    it('should send a success response', async () => {
+      // Arrange
+      const req = {
+        logout: vi.fn((callback: (err?: Error) => void) => {
+          callback();
+        }),
+      } as unknown as Request;
+
+      // Act
+      await authController.logout(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.OK);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: 'User logged out',
+        responseObject: null,
+        statusCode: StatusCodes.OK,
+      });
+    });
+
+    it('should send an unauthorized response', async () => {
+      // Arrange
+      const req = {
+        logout: vi.fn((callback: (err: Error) => void) => {
+          callback(new Error('Unauthorized'));
+        }),
+      } as unknown as Request;
+
+      // Act
+      await authController.logout(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: 'Unauthorized',
+        responseObject: null,
+        statusCode: StatusCodes.UNAUTHORIZED,
+      });
+    });
+  });
+
+  describe('add invite', () => {
+    it('should send a success response for valid input', async () => {
+      // Arrange
+      const req = {
+        body: {
+          email: env.TEST_EMAIL,
+        },
+      } as unknown as Request;
+
+      // Act
+      await authController.addInvite(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.CREATED);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: 'Invite created',
+        responseObject: expect.any(Object),
+        statusCode: StatusCodes.CREATED,
+      });
+    });
+  });
+
+  describe('login success', () => {
+    it('should send a success response for valid user', async () => {
+      // Arrange
+      const req = {
+        user: {
+          _id: '123',
+          local: {
+            email: env.TEST_EMAIL,
+          },
+        },
+      } as unknown as Request;
+
+      // Act
+      await authController.loginSuccess(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.OK);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: 'User signed in',
+        responseObject: {
+          _id: '123',
+          local: {
+            email: env.TEST_EMAIL,
+          },
+        },
+        statusCode: StatusCodes.OK,
+      });
     });
   });
 });

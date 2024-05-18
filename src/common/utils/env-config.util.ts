@@ -13,4 +13,11 @@ export const env = cleanEnv(process.env, {
   DB_URI: str({ devDefault: testOnly('mongodb://localhost:27017/test') }),
   ACCESS_TOKEN: str(),
   JWT_SECRET: str(),
+  GOOGLE_CLIENT_ID: str(),
+  GOOGLE_CLIENT_SECRET: str(),
+  GOOGLE_CALLBACK_URL: str(),
+  TEST_EMAIL: str(),
+  TEST_ALT_EMAIL: str(),
+  TEST_PASSWORD: str(),
+  FRONTEND_URL: str(),
 });

@@ -1,6 +1,7 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import passport from 'passport';
 import { z } from 'zod';
 
 import { UserSchema } from '@/api/user/schemas';
@@ -9,10 +10,12 @@ import { passAuth } from '@/common/middleware/auth.middleware';
 import { Module } from '@/common/models/module.model';
 import { Method } from '@/common/models/route.model';
 import { RequestHeaderSchema } from '@/common/schemas/request.schema';
+import { env } from '@/common/utils/env-config.util';
 import { validateAccessToken, validateRequest } from '@/common/utils/http-handlers.util';
 
 import { authController } from '../controllers/auth.controller';
-import { SignInSchema, UserSignedInSchema } from '../schemas/sign-in.schema';
+import { AddInviteSchema } from '../schemas/add-invite.schema';
+import { LoginSuccessSchema, LogoutSchema, SignInSchema, UserSignedInSchema } from '../schemas/sign-in.schema';
 import { SignUpSchema } from '../schemas/sign-up.schema';
 
 export const authRegistry = new OpenAPIRegistry();
@@ -31,9 +34,9 @@ export const authRouter: Router = (() => {
       content: {
         'application/json': {
           example: {
-            email: 'jrobin@example.com',
-            password: 'vy%Y0*y949ML]6',
-            repeatPassword: 'vy%Y0*y949ML]6',
+            email: env.TEST_EMAIL,
+            password: env.TEST_PASSWORD,
+            repeatPassword: env.TEST_PASSWORD,
           },
         },
       },
@@ -67,8 +70,8 @@ export const authRouter: Router = (() => {
       content: {
         'application/json': {
           example: {
-            email: 'jrobin@example.com',
-            password: 'vy%Y0*y949ML]6',
+            email: env.TEST_EMAIL,
+            password: env.TEST_PASSWORD,
           },
         },
       },
@@ -94,6 +97,51 @@ export const authRouter: Router = (() => {
   });
   router.post('/signin', validateRequest(SignInSchema), authController.signIn);
 
+  router.get('/login/failed', (_req, res) => {
+    res.redirect(`${env.FRONTEND_URL}/auth/failed`);
+  });
+
+  authRegistry.registerPath({
+    method: Method.GET,
+    path: '/api/auth/login/success',
+    tags: [Module.AUTH],
+    responses: createApiResponses([
+      {
+        schema: LoginSuccessSchema,
+        statusCode: StatusCodes.OK,
+      },
+      {
+        schema: z.null(),
+        statusCode: StatusCodes.UNAUTHORIZED,
+      },
+    ]),
+  });
+  router.get('/login/success', authController.loginSuccess);
+
+  authRegistry.registerPath({
+    method: Method.GET,
+    path: '/api/auth/logout',
+    tags: [Module.AUTH],
+    responses: createApiResponses([
+      {
+        schema: LogoutSchema,
+        statusCode: StatusCodes.OK,
+      },
+      {
+        schema: z.null(),
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      },
+    ]),
+  });
+  router.get('/logout', authController.logout);
+
+  router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+  router.get(
+    '/google/callback',
+    passport.authenticate('google', { failureRedirect: '/api/auth/login/failed', successRedirect: env.FRONTEND_URL })
+  );
+
   authRegistry.registerPath({
     method: 'get',
     path: '/api/auth/check-session',
@@ -108,6 +156,52 @@ export const authRouter: Router = (() => {
     ]),
   });
   router.get('/check-session', passAuth('jwt'), authController.checkSession);
+
+  authRegistry.registerPath({
+    method: 'get',
+    path: '/api/auth/check-session-google',
+    tags: [Module.AUTH],
+    responses: createApiResponses([
+      {
+        schema: z.object({
+          message: z.string(),
+        }),
+        statusCode: StatusCodes.OK,
+      },
+    ]),
+  });
+  router.get('/check-session-google', passAuth('google'), authController.checkSession);
+
+  authRegistry.registerPath({
+    method: 'post',
+    path: '/api/auth/add-invite',
+    tags: [Module.AUTH],
+    request: RequestHeaderSchema,
+    requestBody: {
+      content: {
+        'application/json': {
+          example: {
+            email: env.TEST_EMAIL,
+          },
+        },
+      },
+    },
+    responses: createApiResponses([
+      {
+        schema: z.string(),
+        statusCode: StatusCodes.CREATED,
+      },
+      {
+        schema: z.null(),
+        statusCode: StatusCodes.CONFLICT,
+      },
+      {
+        schema: z.null(),
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      },
+    ]),
+  });
+  router.post('/add-invite', validateAccessToken, validateRequest(AddInviteSchema), authController.addInvite);
 
   return router;
 })();

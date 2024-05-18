@@ -23,7 +23,7 @@ export class User {
   @prop({ type: Mixed })
   google: {
     id: string;
-    token: string;
+    token?: string;
     email: string;
     name: string;
   };

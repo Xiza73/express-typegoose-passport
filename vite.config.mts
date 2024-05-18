@@ -10,6 +10,7 @@ export default defineConfig({
         '**/release.config.cjs',
         '**/index.ts',
         '**/models/**',
+        '**/config/**',
       ],
     },
     globals: true,
