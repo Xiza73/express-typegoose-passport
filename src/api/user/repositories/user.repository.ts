@@ -3,7 +3,7 @@ import { User, UserModel } from '../models';
 export const userRepository = {
   findByEmail: async (email: string) => {
     return UserModel.findOne({
-      'local.email': email,
+      'local.email': email.toLowerCase(),
     }).exec();
   },
 
@@ -25,7 +25,7 @@ export const userRepository = {
       },
     });
 
-    newUser.local.password = newUser.generateHash(password);
+    // newUser.local.password = newUser.generateHash(password);
 
     const savedUser = await newUser.save();
     if (!savedUser) throw new Error('Error creating user');

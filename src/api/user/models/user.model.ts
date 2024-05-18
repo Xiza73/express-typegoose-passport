@@ -4,6 +4,10 @@ import mongoose from 'mongoose';
 
 const Mixed = mongoose.Schema.Types.Mixed;
 
+const generateHash = (password: string) => {
+  return bcrypt.hashSync(password, bcrypt.genSaltSync(8));
+};
+
 @modelOptions({
   schemaOptions: {
     collection: 'users',
@@ -14,7 +18,13 @@ const Mixed = mongoose.Schema.Types.Mixed;
   options: { allowMixed: Severity.ALLOW },
 })
 export class User {
-  @prop({ type: Mixed })
+  @prop({
+    type: Mixed,
+    set: (v: { email: string; password: string }) => ({
+      email: v.email.toLowerCase(),
+      password: generateHash(v.password),
+    }),
+  })
   local: {
     email: string;
     password: string;
@@ -27,11 +37,6 @@ export class User {
     email: string;
     name: string;
   };
-
-  // generating a hash
-  generateHash(password: string) {
-    return bcrypt.hashSync(password, bcrypt.genSaltSync(8));
-  }
 
   // checks if password is valid
   validPassword(password: string) {
