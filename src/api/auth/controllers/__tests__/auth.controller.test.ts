@@ -1,4 +1,3 @@
-// tests for the auth controller
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
@@ -135,7 +134,12 @@ describe('AuthController', () => {
 
       // Assert
       expect(res.status).toHaveBeenCalledWith(StatusCodes.OK);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Session is active' });
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: 'Session is active',
+        responseObject: null,
+        statusCode: StatusCodes.OK,
+      });
     });
   });
 

@@ -23,7 +23,7 @@ const _app: Express = express();
 _app.set('trust proxy', true);
 
 // Middlewares
-_app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+// _app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 _app.use(morgan('dev'));
 _app.use(bodyParser.urlencoded({ extended: true }));
 _app.use(bodyParser.json());
@@ -67,7 +67,20 @@ _app.use(rateLimiter);
 _app.use(requestLogger);
 
 // Routes
-_app.use('/', routes);
+const whitelist = env.WHITE_LIST_URLS.split(',');
+
+_app.use(
+  '/',
+  cors({
+    origin: (origin: string | undefined, callback: any) => {
+      if (!origin) return callback(null, true);
+      if (whitelist.indexOf(origin) !== -1) return callback(null, true);
+      callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  }),
+  routes
+);
 
 // Swagger UI
 _app.use(openAPIRouter);

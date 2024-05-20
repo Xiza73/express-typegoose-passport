@@ -152,6 +152,71 @@ describe('AuthService', () => {
     });
   });
 
+  describe('sign in google', () => {
+    it('should return a success response for valid input', async () => {
+      // Arrange
+      const googleId = '123';
+      const user = {
+        _id: '123',
+        google: {
+          id: googleId,
+          email: env.TEST_EMAIL,
+          name: 'Test User',
+        },
+      };
+      await userRepository.createGoogleUser(user.google);
+
+      // Act
+      const response = await authService.signInGoogle(googleId);
+
+      // Assert
+      expect(response.success).toBeTruthy();
+      expect(response.message).toContain('User signed in');
+      expect(response.responseObject).toHaveProperty('_id');
+      expect(response.responseObject?.google.email).toEqual(env.TEST_EMAIL);
+      expect(response.responseObject?.token).toBeDefined();
+    });
+
+    it('should return a bad request for missing google ID', async () => {
+      // Arrange
+
+      // Act
+      const response = await authService.signInGoogle('');
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('Google ID not found');
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return a not found for non-existing user', async () => {
+      // Arrange
+      const nonExistingGoogleId = '123';
+
+      // Act
+      const response = await authService.signInGoogle(nonExistingGoogleId);
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('User not found');
+      expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+    });
+
+    it('should return an internal server error for unexpected error', async () => {
+      // Arrange
+      const googleId = '123';
+      vi.spyOn(userRepository, 'findByGoogleId').mockRejectedValue('Mocked error');
+
+      // Act
+      const response = await authService.signInGoogle(googleId);
+
+      // Assert
+      expect(response.success).toBeFalsy();
+      expect(response.message).toContain('Error signing in with Google');
+      expect(response.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
+    });
+  });
+
   describe('login success', () => {
     it('should return a success response for valid user', async () => {
       // Arrange
@@ -160,7 +225,13 @@ describe('AuthService', () => {
         local: {
           email: env.TEST_EMAIL,
         },
+        google: {
+          id: '123',
+          email: env.TEST_EMAIL,
+          name: 'Test User',
+        },
       };
+      await userRepository.createGoogleUser(user.google);
 
       // Act
       const response = await authService.loginSuccess(user as any);
@@ -169,7 +240,7 @@ describe('AuthService', () => {
       expect(response.success).toBeTruthy();
       expect(response.message).toContain('User signed in');
       expect(response.responseObject).toHaveProperty('_id');
-      expect(response.responseObject?.local.email).toEqual(env.TEST_EMAIL);
+      expect(response.responseObject?.google.email).toEqual(env.TEST_EMAIL);
     });
 
     it('should return an unauthorized for missing user', async () => {

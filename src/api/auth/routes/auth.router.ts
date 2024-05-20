@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { UserSchema } from '@/api/user/schemas';
 import { createApiResponses } from '@/api-docs/openAPIResponseBuilders';
-import { passAuth } from '@/common/middleware/auth.middleware';
+import { passportAuthenticate } from '@/common/middleware/auth.middleware';
 import { Module } from '@/common/models/module.model';
 import { Method } from '@/common/models/route.model';
 import { RequestHeaderSchema } from '@/common/schemas/request.schema';
@@ -155,22 +155,7 @@ export const authRouter: Router = (() => {
       },
     ]),
   });
-  router.get('/check-session', passAuth('jwt'), authController.checkSession);
-
-  authRegistry.registerPath({
-    method: 'get',
-    path: '/api/auth/check-session-google',
-    tags: [Module.AUTH],
-    responses: createApiResponses([
-      {
-        schema: z.object({
-          message: z.string(),
-        }),
-        statusCode: StatusCodes.OK,
-      },
-    ]),
-  });
-  router.get('/check-session-google', passAuth('google'), authController.checkSession);
+  router.get('/check-session', passportAuthenticate, authController.checkSession);
 
   authRegistry.registerPath({
     method: 'post',
