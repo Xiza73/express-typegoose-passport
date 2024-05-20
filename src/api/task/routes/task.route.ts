@@ -7,8 +7,10 @@ import { createApiResponses } from '@/api-docs/openAPIResponseBuilders';
 import { addUserToRequest, passportAuthenticate } from '@/common/middleware/auth.middleware';
 import { Module } from '@/common/models/module.model';
 import { Method } from '@/common/models/route.model';
+import { validateRequest } from '@/common/utils/http-handlers.util';
 
 import { taskController } from '../controllers/task.controller';
+import { CreateTaskSchema } from '../schemas/create-task.schema';
 import { TaskSchema } from '../schemas/task.schema';
 
 export const taskRegistry = new OpenAPIRegistry();
@@ -47,7 +49,7 @@ export const taskRouter: Router = (() => {
       },
     ]),
   });
-  router.post('/', passportAuthenticate, addUserToRequest, taskController.create);
+  router.post('/', passportAuthenticate, validateRequest(CreateTaskSchema), addUserToRequest, taskController.create);
 
   return router;
 })();
