@@ -13,7 +13,6 @@ export const inviteRepository = {
     });
 
     const savedInvite = await newInvite.save();
-    if (!savedInvite) throw new Error('Error creating invite');
 
     return savedInvite;
   },

@@ -57,6 +57,6 @@ export const authController = {
   },
 
   checkSession: async (_req: Request, res: Response): Promise<void> => {
-    res.status(200).json({ message: 'Session is active' });
+    handleServiceResponse(new ServiceResponse(ResponseStatus.Success, 'Session is active', null, StatusCodes.OK), res);
   },
 };

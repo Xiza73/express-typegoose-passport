@@ -54,10 +54,33 @@ export const authService = {
     }
   },
 
+  signInGoogle: async (googleId: string) => {
+    try {
+      if (!googleId)
+        return new ServiceResponse(ResponseStatus.Failed, 'Google ID not found', null, StatusCodes.BAD_REQUEST);
+
+      const user = await userRepository.findByGoogleId(googleId);
+      if (!user) return new ServiceResponse(ResponseStatus.Failed, 'User not found', null, StatusCodes.NOT_FOUND);
+
+      const token = authService.createToken(user._id.toString());
+
+      return new ServiceResponse<User & { token: string }>(
+        ResponseStatus.Success,
+        'User signed in',
+        Object.assign(user.toObject(), { token }),
+        StatusCodes.OK
+      );
+    } catch (error) {
+      const errorMessage = `Error signing in with Google: ${(error as Error).message}`;
+      logger.error(errorMessage);
+      return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  },
+
   loginSuccess: async (user?: User): Promise<ServiceResponse<User | null>> => {
     if (!user) return new ServiceResponse(ResponseStatus.Failed, 'Unauthorized', null, StatusCodes.UNAUTHORIZED);
 
-    return new ServiceResponse<User>(ResponseStatus.Success, 'User signed in', user, StatusCodes.OK);
+    return await authService.signInGoogle(user.google.id);
   },
 
   addInvite: async (email: string): Promise<ServiceResponse<string | null>> => {
