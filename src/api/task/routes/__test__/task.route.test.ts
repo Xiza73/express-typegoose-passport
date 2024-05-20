@@ -66,7 +66,7 @@ describe('TaskRouter', () => {
       const responseBody = response.body;
 
       // Assert
-      expect(response.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       expect(responseBody.success).toBeFalsy();
     });
   });
