@@ -15,6 +15,12 @@ vi.mock('../../services/task.service', () => ({
       },
       statusCode: StatusCodes.CREATED,
     })),
+    list: vi.fn(() => ({
+      success: true,
+      message: 'Tasks found',
+      responseObject: [],
+      statusCode: StatusCodes.OK,
+    })),
   },
 }));
 
@@ -28,33 +34,63 @@ beforeAll(() => {
   vi.clearAllMocks();
 });
 
-describe('createTask', () => {
-  it('should create a task', async () => {
-    // Arrange
-    const req = {
-      body: {
-        title: 'Task 1',
-        description: 'Task 1 description',
-      },
-      userAuth: {
-        _id: '1234567890',
-      },
-    } as unknown as Request;
+describe('Task Controller', () => {
+  describe('createTask', () => {
+    it('should create a task', async () => {
+      // Arrange
+      const req = {
+        body: {
+          title: 'Task 1',
+          description: 'Task 1 description',
+        },
+        userAuth: {
+          _id: '1234567890',
+        },
+      } as unknown as Request;
 
-    // Act
-    await taskController.create(req, res);
+      // Act
+      await taskController.create(req, res);
 
-    // Assert
-    expect(res.status).toHaveBeenCalledWith(StatusCodes.CREATED);
-    expect(res.send).toHaveBeenCalledWith({
-      success: true,
-      message: 'Task created',
-      responseObject: {
-        _id: '1234567890',
-        title: 'Task 1',
-        description: 'Task 1 description',
-      },
-      statusCode: StatusCodes.CREATED,
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.CREATED);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: 'Task created',
+        responseObject: {
+          _id: '1234567890',
+          title: 'Task 1',
+          description: 'Task 1 description',
+        },
+        statusCode: StatusCodes.CREATED,
+      });
+    });
+  });
+
+  describe('listTasks', () => {
+    it('should list tasks', async () => {
+      // Arrange
+      const req = {
+        query: {
+          page: 1,
+          limit: 10,
+          title: 'Task 1',
+        },
+        userAuth: {
+          _id: '1234567890',
+        },
+      } as unknown as Request;
+
+      // Act
+      await taskController.list(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.OK);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: 'Tasks found',
+        responseObject: [],
+        statusCode: StatusCodes.OK,
+      });
     });
   });
 });
