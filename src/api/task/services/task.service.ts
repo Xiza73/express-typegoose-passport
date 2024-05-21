@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { userRepository } from '@/api/user/repositories/user.repository';
+import { emptyListResponse, ListResponse } from '@/common/models/list.model';
 import { ResponseStatus, ServiceResponse } from '@/common/models/service-response.model';
 import { logger } from '@/config/logger.config';
 
@@ -23,6 +24,40 @@ export const taskService = {
       const errorMessage = `Error creating task: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  },
+
+  list: async (
+    userId: string,
+    filters: {
+      page: number;
+      limit: number;
+      title?: string;
+    }
+  ): Promise<ServiceResponse<ListResponse<Task>>> => {
+    try {
+      const { tasks, total } = await taskRepository.list(userId, filters);
+
+      return new ServiceResponse<ListResponse<Task>>(
+        ResponseStatus.Success,
+        'Tasks retrieved',
+        {
+          data: tasks,
+          total,
+          pages: Math.ceil(total / filters.limit),
+          page: filters.page,
+        },
+        StatusCodes.OK
+      );
+    } catch (ex) {
+      const errorMessage = `Error listing tasks: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return new ServiceResponse(
+        ResponseStatus.Failed,
+        errorMessage,
+        emptyListResponse,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
     }
   },
 };

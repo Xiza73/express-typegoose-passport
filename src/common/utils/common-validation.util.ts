@@ -30,4 +30,22 @@ export const commonValidations = {
       /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])/,
       'Password must contain at least one lowercase letter, one uppercase letter, and one number'
     ),
+
+  // page: z.number().int().positive().optional(),
+  // first try to parse the value as a number, then check if it's an integer, then check if it's positive
+  page: z
+    .string()
+    .refine((data) => !isNaN(Number(data)), 'Page must be a numeric value')
+    .transform(Number)
+    .refine((num) => num > 0, 'Page must be a positive number')
+    .refine((num) => Number.isInteger(num), 'Page must be an integer')
+    .optional(),
+
+  limit: z
+    .string()
+    .refine((data) => !isNaN(Number(data)), 'Limit must be a numeric value')
+    .transform(Number)
+    .refine((num) => num > 0, 'Limit must be a positive number')
+    .refine((num) => Number.isInteger(num), 'Limit must be an integer')
+    .optional(),
 };

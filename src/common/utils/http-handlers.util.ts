@@ -14,7 +14,8 @@ export const validateRequest = (schema: ZodSchema) => (req: Request, res: Respon
     schema.parse({ body: req.body, query: req.query, params: req.params });
     next();
   } catch (err) {
-    const errorMessage = `Invalid input: ${(err as ZodError).errors.map((e) => e.message).join(', ')}`;
+    const firstError = (err as ZodError).errors[0];
+    const errorMessage = `Invalid input for ${firstError.path.join('.')}: ${firstError.message}`;
     const statusCode = StatusCodes.BAD_REQUEST;
     res.status(statusCode).send(new ServiceResponse<null>(ResponseStatus.Failed, errorMessage, null, statusCode));
   }

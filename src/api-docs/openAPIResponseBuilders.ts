@@ -5,20 +5,18 @@ import { z } from 'zod';
 import { getCodeDescription } from '@/common/models/code-description.model';
 import { ServiceResponseSchema } from '@/common/models/service-response.model';
 
-export function createApiResponse(schema: z.ZodTypeAny, statusCode = StatusCodes.OK) {
-  return {
-    [statusCode]: {
-      description: getCodeDescription(statusCode),
-      content: {
-        'application/json': {
-          schema: ServiceResponseSchema(schema),
-        },
-      },
-    },
-  };
-}
-
-// Use if you want multiple responses for a single endpoint
+// export function createApiResponse(schema: z.ZodTypeAny, statusCode = StatusCodes.OK) {
+//   return {
+//     [statusCode]: {
+//       description: getCodeDescription(statusCode),
+//       content: {
+//         'application/json': {
+//           schema: ServiceResponseSchema(schema),
+//         },
+//       },
+//     },
+//   };
+// }
 
 export interface ApiResponseConfig {
   schema: z.ZodTypeAny;
