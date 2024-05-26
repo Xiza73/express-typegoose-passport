@@ -1,15 +1,28 @@
+import { BeAnObject, IObjectWithTypegooseFunction } from '@typegoose/typegoose/lib/types';
 import { StatusCodes } from 'http-status-codes';
+import { Document, Types } from 'mongoose';
 
 import { userRepository } from '@/api/user/repositories/user.repository';
 import { emptyListResponse, ListResponse } from '@/common/models/list.model';
 import { ResponseStatus, ServiceResponse } from '@/common/models/service-response.model';
 import { logger } from '@/config/logger.config';
 
+import { TaskStatus } from '../interfaces/status.interface';
 import { Task } from '../models/task.model';
 import { taskRepository } from '../repositories/task.repository';
 
+type TaskReturnType = Document<unknown, BeAnObject, Task> &
+  Omit<
+    Task & {
+      _id: Types.ObjectId;
+    },
+    'typegooseName'
+  > &
+  IObjectWithTypegooseFunction;
+type TaskServiceResponse = ServiceResponse<TaskReturnType | null>;
+
 export const taskService = {
-  create: async (title: string, description: string, userId?: string): Promise<ServiceResponse<Task | null>> => {
+  create: async (title: string, description: string, userId?: string): Promise<TaskServiceResponse> => {
     try {
       if (!userId)
         return new ServiceResponse(ResponseStatus.Failed, 'User ID is required', null, StatusCodes.BAD_REQUEST);
@@ -19,7 +32,7 @@ export const taskService = {
 
       const newTask = await taskRepository.create(title, description, user._id);
 
-      return new ServiceResponse<Task>(ResponseStatus.Success, 'Task created', newTask, StatusCodes.CREATED);
+      return new ServiceResponse<TaskReturnType>(ResponseStatus.Success, 'Task created', newTask, StatusCodes.CREATED);
     } catch (ex) {
       const errorMessage = `Error creating task: ${(ex as Error).message}`;
       logger.error(errorMessage);
@@ -58,6 +71,53 @@ export const taskService = {
         emptyListResponse,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
+    }
+  },
+
+  get: async (taskId: string): Promise<ServiceResponse<Task | null>> => {
+    try {
+      const task = await taskRepository.findById(taskId);
+
+      if (!task) return new ServiceResponse(ResponseStatus.Failed, 'Task not found', null, StatusCodes.NOT_FOUND);
+
+      return new ServiceResponse<Task>(ResponseStatus.Success, 'Task retrieved', task, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error retrieving task: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  },
+
+  update: async (
+    taskId: string,
+    title: string,
+    description: string,
+    status: TaskStatus
+  ): Promise<ServiceResponse<Task | null>> => {
+    try {
+      const task = await taskRepository.update(taskId, title, description, status);
+
+      if (!task) return new ServiceResponse(ResponseStatus.Failed, 'Task not found', null, StatusCodes.NOT_FOUND);
+
+      return new ServiceResponse<Task>(ResponseStatus.Success, 'Task updated', task, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error updating task: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  },
+
+  delete: async (taskId: string): Promise<ServiceResponse<Task | null>> => {
+    try {
+      const task = await taskRepository.delete(taskId);
+
+      if (!task) return new ServiceResponse(ResponseStatus.Failed, 'Task not found', null, StatusCodes.NOT_FOUND);
+
+      return new ServiceResponse<Task>(ResponseStatus.Success, 'Task deleted', task, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error deleting task: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return new ServiceResponse(ResponseStatus.Failed, errorMessage, null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   },
 };

@@ -25,4 +25,29 @@ export const taskController = {
 
     handleServiceResponse(serviceResponse, res);
   },
+
+  get: async (req: Request, res: Response): Promise<void> => {
+    const { taskId } = req.params;
+
+    const serviceResponse = await taskService.get(taskId);
+
+    handleServiceResponse(serviceResponse, res);
+  },
+
+  update: async (req: Request, res: Response): Promise<void> => {
+    const { taskId } = req.params;
+    const { title, description, status } = req.body;
+
+    const serviceResponse = await taskService.update(taskId, title, description, status);
+
+    handleServiceResponse(serviceResponse, res);
+  },
+
+  delete: async (req: Request, res: Response): Promise<void> => {
+    const { taskId } = req.params;
+
+    const serviceResponse = await taskService.delete(taskId);
+
+    handleServiceResponse(serviceResponse, res);
+  },
 };

@@ -13,6 +13,7 @@ import { taskController } from '../controllers/task.controller';
 import { CreateTaskSchema } from '../schemas/create-task.schema';
 import { ListTasksResponseSchema, ListTasksSchema } from '../schemas/list-tasks.schema';
 import { TaskSchema } from '../schemas/task.schema';
+import { UpdateTaskSchema } from '../schemas/update-task.schema';
 
 export const taskRegistry = new OpenAPIRegistry();
 
@@ -101,6 +102,98 @@ export const taskRouter: Router = (() => {
     ]),
   });
   router.get('/', passportAuthenticate, validateRequest(ListTasksSchema), addUserToRequest, taskController.list);
+
+  taskRegistry.registerPath({
+    method: Method.GET,
+    path: '/api/task/{taskId}',
+    tags: [Module.TASK],
+    parameters: [
+      {
+        in: 'path',
+        name: 'taskId',
+        schema: {
+          type: 'string',
+        },
+        required: true,
+      },
+    ],
+    responses: createApiResponses([
+      {
+        schema: TaskSchema,
+        statusCode: StatusCodes.OK,
+      },
+      {
+        schema: z.null(),
+        statusCode: StatusCodes.NOT_FOUND,
+      },
+    ]),
+  });
+  router.get('/:taskId', passportAuthenticate, taskController.get);
+
+  taskRegistry.registerPath({
+    method: Method.PUT,
+    path: '/api/task/{taskId}',
+    tags: [Module.TASK],
+    parameters: [
+      {
+        in: 'path',
+        name: 'taskId',
+        schema: {
+          type: 'string',
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      content: {
+        'application/json': {
+          example: {
+            title: 'Task 1',
+            description: 'Description of Task 1',
+            status: 'Open',
+          },
+        },
+      },
+    },
+    responses: createApiResponses([
+      {
+        schema: TaskSchema,
+        statusCode: StatusCodes.OK,
+      },
+      {
+        schema: z.null(),
+        statusCode: StatusCodes.NOT_FOUND,
+      },
+    ]),
+  });
+  router.put('/:taskId', passportAuthenticate, validateRequest(UpdateTaskSchema), taskController.update);
+
+  taskRegistry.registerPath({
+    method: Method.DELETE,
+    path: '/api/task/{taskId}',
+    tags: [Module.TASK],
+    parameters: [
+      {
+        in: 'path',
+        name: 'taskId',
+        schema: {
+          type: 'string',
+        },
+        required: true,
+      },
+    ],
+    responses: createApiResponses([
+      {
+        schema: TaskSchema,
+        statusCode: StatusCodes.OK,
+      },
+      {
+        schema: z.null(),
+        statusCode: StatusCodes.NOT_FOUND,
+      },
+    ]),
+  });
+  router.delete('/:taskId', passportAuthenticate, taskController.delete);
 
   return router;
 })();
