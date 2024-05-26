@@ -2,6 +2,8 @@ import { Types } from 'mongoose';
 
 import { TaskModel } from '../models/task.model';
 
+const populateUserFields = 'local.email google.email google.name';
+
 export const taskRepository = {
   create: async (title: string, description: string, userId: Types.ObjectId) => {
     const newTask = new TaskModel();
@@ -82,5 +84,37 @@ export const taskRepository = {
     const total = result[0].total[0].total;
 
     return { tasks, total };
+  },
+
+  findById: async (taskId: string) => {
+    const task = await TaskModel.findById(taskId)
+      .populate('assignedTo', populateUserFields)
+      .populate('createdBy', populateUserFields);
+
+    return task;
+  },
+
+  update: async (taskId: string, title: string, description: string, status: string) => {
+    const task = await TaskModel.findByIdAndUpdate(
+      taskId,
+      {
+        title,
+        description,
+        status,
+      },
+      { new: true }
+    )
+      .populate('assignedTo', populateUserFields)
+      .populate('createdBy', populateUserFields);
+
+    return task;
+  },
+
+  delete: async (taskId: string) => {
+    const task = await TaskModel.findByIdAndDelete(taskId)
+      .populate('assignedTo', populateUserFields)
+      .populate('createdBy', populateUserFields);
+
+    return task;
   },
 };
