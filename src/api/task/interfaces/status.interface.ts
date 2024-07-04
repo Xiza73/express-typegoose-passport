@@ -11,7 +11,7 @@ export const TaskStatus = {
 export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 
 export const StatusType = {
-  BASIC: 'Basic', // 'Open' | 'Done'
-  FULL: 'Full', // 'Open' | 'Done' | 'In Progress'
+  BASIC: 'Basic',
+  FULL: 'Full',
 } as const;
 export type StatusType = (typeof StatusType)[keyof typeof StatusType];
